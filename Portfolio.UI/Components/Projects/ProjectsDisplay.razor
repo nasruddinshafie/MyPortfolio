@@ -1,0 +1,141 @@
+@using Portfolio.UI.DTOs
+
+<div class="projects-display">
+    @if (Projects != null && Projects.Any())
+    {
+        <div class="mb-4">
+            <h2 class="section-title">
+                <i class="fas fa-laptop-code"></i> Projects
+            </h2>
+            <p class="text-muted">A showcase of my work and portfolio projects</p>
+        </div>
+
+        <div class="row">
+            @foreach (var project in Projects.Where(p => p.IsActive).OrderBy(p => p.DisplayOrder))
+            {
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 project-card">
+                        @if (!string.IsNullOrEmpty(project.ImageUrl))
+                        {
+                            <img src="@project.ImageUrl" class="card-img-top project-image" alt="@project.Title">
+                        }
+                        else
+                        {
+                            <div class="card-img-top project-image-placeholder">
+                                <i class="fas fa-code fa-3x"></i>
+                            </div>
+                        }
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@project.Title</h5>
+                            <p class="card-text flex-grow-1">@project.Description</p>
+
+                            @if (project.Technologies.Any())
+                            {
+                                <div class="mb-3 tech-badges">
+                                    @foreach (var tech in project.Technologies.Take(5))
+                                    {
+                                        <span class="badge bg-info text-dark me-1 mb-1">@tech</span>
+                                    }
+                                    @if (project.Technologies.Count > 5)
+                                    {
+                                        <span class="badge bg-secondary mb-1">+@(project.Technologies.Count - 5) more</span>
+                                    }
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center mt-auto">
+                                <div class="btn-group">
+                                    @if (!string.IsNullOrEmpty(project.ProjectUrl))
+                                    {
+                                        <a href="@project.ProjectUrl" target="_blank" class="btn btn-sm btn-outline-primary" title="View Project">
+                                            <i class="fas fa-external-link-alt"></i> View
+                                        </a>
+                                    }
+                                    @if (!string.IsNullOrEmpty(project.GitHubUrl))
+                                    {
+                                        <a href="@project.GitHubUrl" target="_blank" class="btn btn-sm btn-outline-dark" title="View on GitHub">
+                                            <i class="fab fa-github"></i> Code
+                                        </a>
+                                    }
+                                </div>
+                                @if (project.StartDate.HasValue)
+                                {
+                                    <small class="text-muted">
+                                        @project.StartDate.Value.ToString("MMM yyyy")
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (ShowManageLink)
+        {
+            <div class="text-center mt-4">
+                <a href="/projects" class="btn btn-outline-primary">
+                    <i class="fas fa-cog"></i> Manage Projects
+                </a>
+            </div>
+        }
+    }
+    else if (Projects != null)
+    {
+        @if (ShowManageLink)
+        {
+            <div class="alert alert-light border">
+                <h4><i class="fas fa-info-circle"></i> No Projects Yet</h4>
+                <p class="mb-3">Start showcasing your work by adding your first project!</p>
+                <a href="/projects/create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Your First Project
+                </a>
+            </div>
+        }
+    }
+</div>
+
+<style>
+    .projects-display .section-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .projects-display .project-card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .projects-display .project-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .projects-display .project-image {
+        height: 200px;
+        object-fit: cover;
+    }
+
+    .projects-display .project-image-placeholder {
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+    }
+
+    .projects-display .tech-badges {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .projects-display .card-text {
+        color: #6c757d;
+    }
+</style>
+
+@code {
+    [Parameter] public IEnumerable<ProjectDto>? Projects { get; set; }
+    [Parameter] public bool ShowManageLink { get; set; } = true;
+}

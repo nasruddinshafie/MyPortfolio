@@ -1,0 +1,238 @@
+@page "/projects/edit/{id:int}"
+@using Portfolio.UI.Services
+@using Portfolio.UI.DTOs
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit Project</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-lg-8 mx-auto">
+            <h1 class="mb-4"><i class="fas fa-edit"></i> Edit Project</h1>
+
+            @if (isLoading)
+            {
+                <div class="text-center p-5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading project...</p>
+                </div>
+            }
+            else if (errorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @errorMessage
+                    <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                </div>
+                <button class="btn btn-secondary" @onclick="Cancel">
+                    <i class="fas fa-arrow-left"></i> Back to Projects
+                </button>
+            }
+            else if (model != null)
+            {
+                <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary class="alert alert-danger" />
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Basic Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title *</label>
+                                <InputText id="title" class="form-control" @bind-Value="model.Title" placeholder="Project name" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Short Description *</label>
+                                <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="3" placeholder="Brief project description" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="detailedDescription" class="form-label">Detailed Description</label>
+                                <InputTextArea id="detailedDescription" class="form-control" @bind-Value="model.DetailedDescription" rows="5" placeholder="Detailed project information" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="technologies" class="form-label">Technologies (comma-separated)</label>
+                                <InputText id="technologies" class="form-control" @bind-Value="technologiesInput" placeholder="C#, React, SQL Server" />
+                                <small class="form-text text-muted">Enter technologies separated by commas</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Links & Media</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="projectUrl" class="form-label">Project URL</label>
+                                <InputText id="projectUrl" class="form-control" @bind-Value="model.ProjectUrl" placeholder="https://project.com" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="githubUrl" class="form-label">GitHub URL</label>
+                                <InputText id="githubUrl" class="form-control" @bind-Value="model.GitHubUrl" placeholder="https://github.com/user/repo" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="imageUrl" class="form-label">Image URL</label>
+                                <InputText id="imageUrl" class="form-control" @bind-Value="model.ImageUrl" placeholder="/images/project.png" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5>Timeline & Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="startDate" class="form-label">Start Date</label>
+                                    <InputDate id="startDate" class="form-control" @bind-Value="model.StartDate" />
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="endDate" class="form-label">End Date</label>
+                                    <InputDate id="endDate" class="form-control" @bind-Value="model.EndDate" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="displayOrder" class="form-label">Display Order</label>
+                                <InputNumber id="displayOrder" class="form-control" @bind-Value="model.DisplayOrder" />
+                                <small class="form-text text-muted">Lower numbers appear first</small>
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <InputCheckbox id="isActive" class="form-check-input" @bind-Value="model.IsActive" />
+                                <label class="form-check-label" for="isActive">
+                                    Active (Show in portfolio)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                            @if (isSubmitting)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                            }
+                            <i class="fas fa-save"></i> Update Project
+                        </button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private UpdateProjectDto? model;
+    private string technologiesInput = string.Empty;
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProject();
+    }
+
+    private async Task LoadProject()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var project = await ProjectService.GetProjectByIdAsync(Id);
+
+            if (project == null)
+            {
+                errorMessage = "Project not found";
+                return;
+            }
+
+            model = new UpdateProjectDto
+            {
+                Id = project.Id,
+                Title = project.Title,
+                Description = project.Description,
+                DetailedDescription = project.DetailedDescription,
+                Technologies = project.Technologies,
+                ProjectUrl = project.ProjectUrl,
+                GitHubUrl = project.GitHubUrl,
+                ImageUrl = project.ImageUrl,
+                StartDate = project.StartDate,
+                EndDate = project.EndDate,
+                IsActive = project.IsActive,
+                DisplayOrder = project.DisplayOrder
+            };
+
+            // Convert technologies list to comma-separated string
+            technologiesInput = string.Join(", ", project.Technologies);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load project: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (model == null) return;
+
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            // Parse technologies from comma-separated input
+            if (!string.IsNullOrWhiteSpace(technologiesInput))
+            {
+                model.Technologies = technologiesInput
+                    .Split(',')
+                    .Select(t => t.Trim())
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToList();
+            }
+            else
+            {
+                model.Technologies = new List<string>();
+            }
+
+            await ProjectService.UpdateProjectAsync(Id, model);
+            NavigationManager.NavigateTo("/projects");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to update project: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/projects");
+    }
+}

@@ -1,0 +1,122 @@
+@page "/bio/edit"
+@using Portfolio.UI.Services
+@using Portfolio.UI.Components.Bio
+@using Portfolio.UI.Models
+@using Portfolio.UI.DTOs
+@inject IBioService BioService
+@inject NavigationManager Navigation
+
+<PageTitle>Edit Bio</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-edit"></i> Edit Your Bio</h3>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center p-4">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3">Loading bio data...</p>
+                        </div>
+                    }
+                    else if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger">
+                            <h6>Error</h6>
+                            <p>@errorMessage</p>
+                            <button class="btn btn-outline-danger" @onclick="LoadBio">Try Again</button>
+                        </div>
+                    }
+                    else if (bio == null)
+                    {
+                        <div class="alert alert-warning">
+                            <h6>No Bio Found</h6>
+                            <p>No bio exists yet. Would you like to create one?</p>
+                            <a href="/bio/create" class="btn btn-primary">Create Bio</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <BioForm Model="@formModel" 
+                                 OnSubmitCallback="@HandleSubmit" 
+                                 OnCancelCallback="@HandleCancel"
+                                 SubmitButtonText="Update Bio"
+                                 IsSubmitting="@isSubmitting" />
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private BioDto? bio;
+    private BioFormModel formModel = new();
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBio();
+    }
+
+    private async Task LoadBio()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            bio = await BioService.GetBioAsync();
+            
+            if (bio != null)
+            {
+                formModel = BioFormModel.FromBioDto(bio);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load bio: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleSubmit(BioFormModel model)
+    {
+        if (bio == null) return;
+
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+            
+            var updateDto = model.ToUpdateDto(bio.Id);
+            await BioService.UpdateBioAsync(bio.Id, updateDto);
+            
+            Navigation.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private Task HandleCancel()
+    {
+        Navigation.NavigateTo("/");
+        return Task.CompletedTask;
+    }
+}

@@ -1,0 +1,141 @@
+@using Portfolio.UI.DTOs
+
+<div class="bio-display">
+    @if (Bio != null)
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        @if (!string.IsNullOrEmpty(Bio.ProfileImageUrl))
+                        {
+                            <img src="@Bio.ProfileImageUrl" alt="@Bio.FullName" class="profile-image img-fluid rounded-circle mb-3" />
+                        }
+                        else
+                        {
+                            <div class="profile-placeholder rounded-circle mx-auto mb-3">
+                                <i class="fas fa-user fa-3x"></i>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-8">
+                        <h1 class="card-title">@Bio.FullName</h1>
+                        <h3 class="text-muted mb-3">@Bio.Title</h3>
+                        <p class="lead">@Bio.Summary</p>
+                        
+                        @if (!string.IsNullOrEmpty(Bio.DetailedDescription))
+                        {
+                            <div class="mt-4">
+                                <h5>About</h5>
+                                <p>@Bio.DetailedDescription</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                
+                <hr />
+                
+                <div class="contact-info">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Contact Information</h5>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <a href="mailto:@Bio.Email">@Bio.Email</a>
+                            </div>
+                            
+                            @if (!string.IsNullOrEmpty(Bio.Phone))
+                            {
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <a href="tel:@Bio.Phone">@Bio.Phone</a>
+                                </div>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(Bio.Location))
+                            {
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>@Bio.Location</span>
+                                </div>
+                            }
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Connect</h5>
+                            <div class="social-links">
+                                @if (!string.IsNullOrEmpty(Bio.LinkedInUrl))
+                                {
+                                    <a href="@Bio.LinkedInUrl" target="_blank" class="btn btn-outline-primary me-2">
+                                        <i class="fab fa-linkedin"></i> LinkedIn
+                                    </a>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Bio.GitHubUrl))
+                                {
+                                    <a href="@Bio.GitHubUrl" target="_blank" class="btn btn-outline-dark me-2">
+                                        <i class="fab fa-github"></i> GitHub
+                                    </a>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Bio.WebsiteUrl))
+                                {
+                                    <a href="@Bio.WebsiteUrl" target="_blank" class="btn btn-outline-info">
+                                        <i class="fas fa-globe"></i> Website
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <h4>No Bio Available</h4>
+            <p>No bio information has been created yet.</p>
+        </div>
+    }
+</div>
+
+<style>
+    .bio-display .profile-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+    }
+    
+    .bio-display .profile-placeholder {
+        width: 150px;
+        height: 150px;
+        background-color: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+    }
+    
+    .bio-display .contact-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .bio-display .contact-item i {
+        width: 20px;
+        margin-right: 10px;
+        color: #6c757d;
+    }
+    
+    .bio-display .social-links {
+        margin-top: 1rem;
+    }
+    
+    .bio-display .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
+@code {
+    [Parameter] public BioDto? Bio { get; set; }
+}

@@ -1,0 +1,96 @@
+@page "/"
+@using Portfolio.UI.Services
+@using Portfolio.UI.Components.Bio
+@using Portfolio.UI.Components.Projects
+@using Portfolio.UI.DTOs
+@inject IBioService BioService
+@inject IProjectService ProjectService
+
+<PageTitle>Portfolio</PageTitle>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            @if (isLoading)
+            {
+                <div class="text-center p-5">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3">Loading portfolio...</p>
+                </div>
+            }
+            else if (errorMessage != null)
+            {
+                <div class="alert alert-danger">
+                    <h4>Error Loading Portfolio</h4>
+                    <p>@errorMessage</p>
+                    <button class="btn btn-outline-danger" @onclick="LoadPortfolio">Try Again</button>
+                </div>
+            }
+            else
+            {
+                <BioDisplay Bio="bio" />
+
+                @if (bio == null)
+                {
+                    <div class="text-center mt-4 mb-4">
+                        <a href="/bio/create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Your Bio
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center mt-4 mb-4">
+                        <a href="/bio/edit" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Edit Bio
+                        </a>
+                    </div>
+                }
+
+                <hr class="my-5" />
+
+                <ProjectsDisplay Projects="projects" ShowManageLink="true" />
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private BioDto? bio;
+    private List<ProjectDto>? projects;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadPortfolio();
+    }
+
+    private async Task LoadPortfolio()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            // Load bio and projects in parallel
+            var bioTask = BioService.GetBioAsync();
+            var projectsTask = ProjectService.GetAllProjectsAsync();
+
+            await Task.WhenAll(bioTask, projectsTask);
+
+            bio = await bioTask;
+            projects = (await projectsTask).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to load portfolio: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

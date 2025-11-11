@@ -1,0 +1,122 @@
+@using Portfolio.UI.DTOs
+@using System.ComponentModel.DataAnnotations
+@using Portfolio.UI.Models
+
+<div class="bio-form">
+    <EditForm Model="@Model" OnValidSubmit="@OnSubmit">
+        <DataAnnotationsValidator />
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="fullname" class="form-label">Full Name *</label>
+                    <InputText @bind-Value="Model.FullName" class="form-control" id="fullname" />
+                    <ValidationMessage For="@(() => Model.FullName)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title *</label>
+                    <InputText @bind-Value="Model.Title" class="form-control" id="title" />
+                    <ValidationMessage For="@(() => Model.Title)" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="summary" class="form-label">Summary *</label>
+            <InputTextArea @bind-Value="Model.Summary" class="form-control" id="summary" rows="3" />
+            <ValidationMessage For="@(() => Model.Summary)" />
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Detailed Description</label>
+            <InputTextArea @bind-Value="Model.DetailedDescription" class="form-control" id="description" rows="5" />
+            <ValidationMessage For="@(() => Model.DetailedDescription)" />
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email *</label>
+                    <InputText @bind-Value="Model.Email" type="email" class="form-control" id="email" />
+                    <ValidationMessage For="@(() => Model.Email)" />
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="phone" class="form-label">Phone</label>
+                    <InputText @bind-Value="Model.Phone" class="form-control" id="phone" />
+                    <ValidationMessage For="@(() => Model.Phone)" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <InputText @bind-Value="Model.Location" class="form-control" id="location" />
+            <ValidationMessage For="@(() => Model.Location)" />
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="linkedin" class="form-label">LinkedIn URL</label>
+                    <InputText @bind-Value="Model.LinkedInUrl" class="form-control" id="linkedin" placeholder="https://linkedin.com/in/username" />
+                    <ValidationMessage For="@(() => Model.LinkedInUrl)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="github" class="form-label">GitHub URL</label>
+                    <InputText @bind-Value="Model.GitHubUrl" class="form-control" id="github" placeholder="https://github.com/username" />
+                    <ValidationMessage For="@(() => Model.GitHubUrl)" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="mb-3">
+                    <label for="website" class="form-label">Website URL</label>
+                    <InputText @bind-Value="Model.WebsiteUrl" class="form-control" id="website" placeholder="https://yourwebsite.com" />
+                    <ValidationMessage For="@(() => Model.WebsiteUrl)" />
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            <label for="profileimage" class="form-label">Profile Image URL</label>
+            <InputText @bind-Value="Model.ProfileImageUrl" class="form-control" id="profileimage" placeholder="https://example.com/image.jpg" />
+            <ValidationMessage For="@(() => Model.ProfileImageUrl)" />
+        </div>
+        
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" @onclick="OnCancel">
+                Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" disabled="@IsSubmitting">
+                @if (IsSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                }
+                @SubmitButtonText
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public BioFormModel Model { get; set; } = new();
+    [Parameter] public EventCallback<BioFormModel> OnSubmitCallback { get; set; }
+    [Parameter] public EventCallback OnCancelCallback { get; set; }
+    [Parameter] public string SubmitButtonText { get; set; } = "Save";
+    [Parameter] public bool IsSubmitting { get; set; } = false;
+
+    private async Task OnSubmit()
+    {
+        await OnSubmitCallback.InvokeAsync(Model);
+    }
+
+    private async Task OnCancel()
+    {
+        await OnCancelCallback.InvokeAsync();
+    }
+}

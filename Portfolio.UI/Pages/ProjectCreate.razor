@@ -1,0 +1,165 @@
+@page "/projects/create"
+@using Portfolio.UI.Services
+@using Portfolio.UI.DTOs
+@inject IProjectService ProjectService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create Project</PageTitle>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12 col-lg-8 mx-auto">
+            <h1 class="mb-4"><i class="fas fa-plus"></i> Create New Project</h1>
+
+            @if (errorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @errorMessage
+                    <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+                </div>
+            }
+
+            <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="alert alert-danger" />
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Basic Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title *</label>
+                            <InputText id="title" class="form-control" @bind-Value="model.Title" placeholder="Project name" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Short Description *</label>
+                            <InputTextArea id="description" class="form-control" @bind-Value="model.Description" rows="3" placeholder="Brief project description" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="detailedDescription" class="form-label">Detailed Description</label>
+                            <InputTextArea id="detailedDescription" class="form-control" @bind-Value="model.DetailedDescription" rows="5" placeholder="Detailed project information" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="technologies" class="form-label">Technologies (comma-separated)</label>
+                            <InputText id="technologies" class="form-control" @bind-Value="technologiesInput" placeholder="C#, React, SQL Server" />
+                            <small class="form-text text-muted">Enter technologies separated by commas</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Links & Media</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="projectUrl" class="form-label">Project URL</label>
+                            <InputText id="projectUrl" class="form-control" @bind-Value="model.ProjectUrl" placeholder="https://project.com" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="githubUrl" class="form-label">GitHub URL</label>
+                            <InputText id="githubUrl" class="form-control" @bind-Value="model.GitHubUrl" placeholder="https://github.com/user/repo" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="imageUrl" class="form-label">Image URL</label>
+                            <InputText id="imageUrl" class="form-control" @bind-Value="model.ImageUrl" placeholder="/images/project.png" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5>Timeline & Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <InputDate id="startDate" class="form-control" @bind-Value="model.StartDate" />
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <InputDate id="endDate" class="form-control" @bind-Value="model.EndDate" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="displayOrder" class="form-label">Display Order</label>
+                            <InputNumber id="displayOrder" class="form-control" @bind-Value="model.DisplayOrder" />
+                            <small class="form-text text-muted">Lower numbers appear first</small>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <InputCheckbox id="isActive" class="form-check-input" @bind-Value="model.IsActive" />
+                            <label class="form-check-label" for="isActive">
+                                Active (Show in portfolio)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <button type="button" class="btn btn-secondary" @onclick="Cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        <i class="fas fa-save"></i> Create Project
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateProjectDto model = new CreateProjectDto { DisplayOrder = 1, IsActive = true };
+    private string technologiesInput = string.Empty;
+    private bool isSubmitting = false;
+    private string? errorMessage;
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            // Parse technologies from comma-separated input
+            if (!string.IsNullOrWhiteSpace(technologiesInput))
+            {
+                model.Technologies = technologiesInput
+                    .Split(',')
+                    .Select(t => t.Trim())
+                    .Where(t => !string.IsNullOrEmpty(t))
+                    .ToList();
+            }
+
+            await ProjectService.CreateProjectAsync(model);
+            NavigationManager.NavigateTo("/projects");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Failed to create project: {ex.Message}";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/projects");
+    }
+}
