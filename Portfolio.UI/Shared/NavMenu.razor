@@ -7,6 +7,12 @@
     </div>
 </div>
 
+@using Microsoft.AspNetCore.Components.Authorization
+@using Portfolio.UI.Services
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
@@ -14,21 +20,43 @@
                 <i class="fas fa-home"></i> Portfolio
             </NavLink>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="projects">
-                <i class="fas fa-laptop-code"></i> Projects
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="bio/create">
-                <i class="fas fa-plus"></i> Create Bio
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="bio/edit">
-                <i class="fas fa-edit"></i> Edit Bio
-            </NavLink>
-        </div>
+
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="projects">
+                        <i class="fas fa-laptop-code"></i> Projects
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="bio/create">
+                        <i class="fas fa-plus"></i> Create Bio
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="bio/edit">
+                        <i class="fas fa-edit"></i> Edit Bio
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <a class="nav-link" href="#" @onclick="HandleLogout" @onclick:preventDefault>
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="register">
+                        <i class="fas fa-user-plus"></i> Register
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
     </nav>
 </div>
 
@@ -40,5 +68,18 @@
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
+    }
+
+    private async Task HandleLogout()
+    {
+        await AuthService.LogoutAsync();
+
+        // Notify authentication state changed
+        if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            customProvider.NotifyAuthenticationStateChanged();
+        }
+
+        NavigationManager.NavigateTo("/", forceLoad: true);
     }
 }

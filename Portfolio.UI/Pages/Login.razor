@@ -1,0 +1,99 @@
+@page "/login"
+@using Portfolio.UI.DTOs.Auth
+@using Portfolio.UI.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Login</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Login</h3>
+
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                    }
+
+                    <EditForm Model="@loginDto" OnValidSubmit="HandleLogin">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <InputText id="email" @bind-Value="loginDto.Email" class="form-control" placeholder="Enter your email" />
+                            <ValidationMessage For="@(() => loginDto.Email)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <InputText id="password" type="password" @bind-Value="loginDto.Password" class="form-control" placeholder="Enter your password" />
+                            <ValidationMessage For="@(() => loginDto.Password)" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" disabled="@isLoading">
+                                @if (isLoading)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                    <span>Logging in...</span>
+                                }
+                                else
+                                {
+                                    <span>Login</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+
+                    <div class="text-center mt-3">
+                        <p>Don't have an account? <a href="/register">Register here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginDto loginDto = new LoginDto { Email = "", Password = "" };
+    private string? errorMessage;
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            await AuthService.LoginAsync(loginDto);
+
+            // Notify authentication state changed
+            if (AuthStateProvider is CustomAuthenticationStateProvider customProvider)
+            {
+                customProvider.NotifyAuthenticationStateChanged();
+            }
+
+            NavigationManager.NavigateTo("/", forceLoad: true);
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = "Invalid email or password";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

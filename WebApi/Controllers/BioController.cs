@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Application.Features.Bio.DTOs;
 using Application.Features.Bio.Queries;
 using Application.Features.Bio.Commands;
@@ -29,6 +30,7 @@ public class BioController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<BioDto>> CreateBio([FromBody] CreateBioDto createBioDto)
     {
         var command = new CreateBioCommand(createBioDto);
@@ -38,6 +40,7 @@ public class BioController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<BioDto>> UpdateBio(int id, [FromBody] UpdateBioDto updateBioDto)
     {
         updateBioDto.Id = id;

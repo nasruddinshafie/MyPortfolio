@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Application.Features.Projects.DTOs;
 using Application.Features.Projects.Queries;
 using Application.Features.Projects.Commands;
@@ -36,6 +37,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<ProjectDto>> CreateProject([FromBody] CreateProjectDto createProjectDto)
     {
         var command = new CreateProjectCommand(createProjectDto);
@@ -45,6 +47,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult<ProjectDto>> UpdateProject(int id, [FromBody] UpdateProjectDto updateProjectDto)
     {
         updateProjectDto.Id = id;
@@ -62,6 +65,7 @@ public class ProjectsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<ActionResult> DeleteProject(int id)
     {
         var command = new DeleteProjectCommand(id);

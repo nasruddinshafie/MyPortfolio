@@ -5,6 +5,9 @@ using Infrastructure;
 using WebApi.Middleware;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
@@ -37,6 +40,30 @@ builder.Services.AddDbContext<PortfolioDbContext>(options =>
 // Add Application and Infrastructure services
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure();
+
+// Add Authentication
+var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key not configured");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("JWT Issuer not configured");
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? throw new InvalidOperationException("JWT Audience not configured");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+    };
+});
 
 // Add Controllers
 builder.Services.AddControllers();
@@ -125,6 +152,8 @@ app.UseHttpsRedirection();
 // Use CORS
 app.UseCors("AllowFrontend");
 
+// Use Authentication and Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map Health Checks

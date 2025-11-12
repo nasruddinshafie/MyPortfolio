@@ -3,6 +3,7 @@
 @using Portfolio.UI.Components.Bio
 @using Portfolio.UI.Components.Projects
 @using Portfolio.UI.DTOs
+@using Microsoft.AspNetCore.Components.Authorization
 @inject IBioService BioService
 @inject IProjectService ProjectService
 
@@ -32,22 +33,36 @@
             {
                 <BioDisplay Bio="bio" />
 
-                @if (bio == null)
-                {
-                    <div class="text-center mt-4 mb-4">
-                        <a href="/bio/create" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Create Your Bio
-                        </a>
-                    </div>
-                }
-                else
-                {
-                    <div class="text-center mt-4 mb-4">
-                        <a href="/bio/edit" class="btn btn-outline-primary">
-                            <i class="fas fa-edit"></i> Edit Bio
-                        </a>
-                    </div>
-                }
+                <AuthorizeView>
+                    <Authorized>
+                        @if (bio == null)
+                        {
+                            <div class="text-center mt-4 mb-4">
+                                <a href="/bio/create" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Create Your Bio
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center mt-4 mb-4">
+                                <a href="/bio/edit" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i> Edit Bio
+                                </a>
+                            </div>
+                        }
+                    </Authorized>
+                    <NotAuthorized>
+                        @if (bio != null)
+                        {
+                            <div class="text-center mt-4 mb-4">
+                                <a href="/login" class="btn btn-outline-secondary">
+                                    <i class="fas fa-sign-in-alt"></i> Login to Edit
+                                </a>
+                            </div>
+                        }
+                    </NotAuthorized>
+                </AuthorizeView>
 
                 <hr class="my-5" />
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Authorization;
 using Portfolio.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
+// Add Authentication services
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddAuthorizationCore();
+
 // Configure HTTP client for API calls with base URL
 builder.Services.AddHttpClient<IBioService, BioService>(client =>
 {
@@ -15,6 +21,11 @@ builder.Services.AddHttpClient<IBioService, BioService>(client =>
 });
 
 builder.Services.AddHttpClient<IProjectService, ProjectService>(client =>
+{
+    client.BaseAddress = new Uri("https://localhost:7278/");
+});
+
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7278/");
 });

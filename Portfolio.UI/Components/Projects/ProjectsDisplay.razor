@@ -1,4 +1,5 @@
 @using Portfolio.UI.DTOs
+@using Microsoft.AspNetCore.Components.Authorization
 
 <div class="projects-display">
     @if (Projects != null && Projects.Any())
@@ -73,24 +74,32 @@
 
         @if (ShowManageLink)
         {
-            <div class="text-center mt-4">
-                <a href="/projects" class="btn btn-outline-primary">
-                    <i class="fas fa-cog"></i> Manage Projects
-                </a>
-            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="text-center mt-4">
+                        <a href="/projects" class="btn btn-outline-primary">
+                            <i class="fas fa-cog"></i> Manage Projects
+                        </a>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
         }
     }
     else if (Projects != null)
     {
         @if (ShowManageLink)
         {
-            <div class="alert alert-light border">
-                <h4><i class="fas fa-info-circle"></i> No Projects Yet</h4>
-                <p class="mb-3">Start showcasing your work by adding your first project!</p>
-                <a href="/projects/create" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Create Your First Project
-                </a>
-            </div>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="alert alert-light border">
+                        <h4><i class="fas fa-info-circle"></i> No Projects Yet</h4>
+                        <p class="mb-3">Start showcasing your work by adding your first project!</p>
+                        <a href="/projects/create" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Your First Project
+                        </a>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
         }
     }
 </div>
