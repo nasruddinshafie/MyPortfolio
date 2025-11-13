@@ -10,6 +10,7 @@ public class AuthService : IAuthService
     private readonly HttpClient _httpClient;
     private readonly IJSRuntime _jsRuntime;
     private const string TokenKey = "authToken";
+    private string? _cachedToken;
 
     public AuthService(HttpClient httpClient, IJSRuntime jsRuntime)
     {
@@ -48,9 +49,14 @@ public class AuthService : IAuthService
 
     public async Task<string?> GetTokenAsync()
     {
+        if (!string.IsNullOrEmpty(_cachedToken))
+            return _cachedToken;
+
         try
         {
-            return await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", TokenKey);
+            _cachedToken = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", TokenKey);
+
+            return _cachedToken;
         }
         catch
         {
@@ -66,11 +72,13 @@ public class AuthService : IAuthService
 
     private async Task SetTokenAsync(string token)
     {
+        _cachedToken = token;
         await _jsRuntime.InvokeVoidAsync("localStorage.setItem", TokenKey, token);
     }
 
     private async Task RemoveTokenAsync()
     {
+        _cachedToken = null;
         await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", TokenKey);
     }
 }

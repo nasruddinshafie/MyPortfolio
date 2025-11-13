@@ -12,6 +12,7 @@ public class PortfolioDbContext : DbContext
     public DbSet<Bio> Bios { get; set; }
     public DbSet<Project> Projects { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Domain.Entities.Contact> Contacts { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -59,6 +60,17 @@ public class PortfolioDbContext : DbContext
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.Username).IsUnique();
+        });
+
+        modelBuilder.Entity<Domain.Entities.Contact>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.IsRead).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
         });
     }
 }

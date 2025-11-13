@@ -52,7 +52,7 @@
                             </div>
                         }
                     </Authorized>
-                    <NotAuthorized>
+                    @* <NotAuthorized>
                         @if (bio != null)
                         {
                             <div class="text-center mt-4 mb-4">
@@ -61,12 +61,33 @@
                                 </a>
                             </div>
                         }
-                    </NotAuthorized>
+                    </NotAuthorized> *@
                 </AuthorizeView>
 
                 <hr class="my-5" />
 
                 <ProjectsDisplay Projects="projects" ShowManageLink="true" />
+
+                <hr class="my-5" />
+
+                <!-- Contact Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card bg-light border-0 shadow-sm">
+                            <div class="card-body text-center py-5">
+                                <h2 class="display-6 mb-3">
+                                    <i class="fas fa-envelope text-primary"></i> Get In Touch
+                                </h2>
+                                <p class="lead text-muted mb-4">
+                                    Have a project in mind or want to collaborate? I'd love to hear from you!
+                                </p>
+                                <a href="/contact" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-paper-plane me-2"></i> Contact Me
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             }
         </div>
     </div>

@@ -1,0 +1,149 @@
+@page "/contact"
+@using Portfolio.UI.Services
+@using Portfolio.UI.DTOs.Contact
+@inject IContactService ContactService
+@inject NavigationManager Navigation
+
+<PageTitle>Contact Me</PageTitle>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card mt-5">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-envelope"></i> Get In Touch</h3>
+                </div>
+                <div class="card-body">
+                    @if (isSubmitted)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h5 class="alert-heading"><i class="fas fa-check-circle"></i> Message Sent!</h5>
+                            <p>Thank you for reaching out! I'll get back to you as soon as possible.</p>
+                            <hr>
+                            <button class="btn btn-primary" @onclick="ResetForm">
+                                <i class="fas fa-paper-plane"></i> Send Another Message
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i> @errorMessage
+                            </div>
+                        }
+
+                        <p class="text-muted mb-4">
+                            Have a question or want to work together? Fill out the form below and I'll get back to you shortly.
+                        </p>
+
+                        <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
+                            <DataAnnotationsValidator />
+
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user"></i> Name <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="name" @bind-Value="contactModel.Name" class="form-control" placeholder="Your full name" />
+                                <ValidationMessage For="@(() => contactModel.Name)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope"></i> Email <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="email" type="email" @bind-Value="contactModel.Email" class="form-control" placeholder="your.email@example.com" />
+                                <ValidationMessage For="@(() => contactModel.Email)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">
+                                    <i class="fas fa-tag"></i> Subject <span class="text-danger">*</span>
+                                </label>
+                                <InputText id="subject" @bind-Value="contactModel.Subject" class="form-control" placeholder="What's this about?" />
+                                <ValidationMessage For="@(() => contactModel.Subject)" class="text-danger" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="message" class="form-label">
+                                    <i class="fas fa-comment"></i> Message <span class="text-danger">*</span>
+                                </label>
+                                <InputTextArea id="message" @bind-Value="contactModel.Message" class="form-control" rows="6" placeholder="Tell me about your project or inquiry..." />
+                                <ValidationMessage For="@(() => contactModel.Message)" class="text-danger" />
+                                <small class="text-muted">@contactModel.Message.Length / 2000 characters</small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg" disabled="@isSubmitting">
+                                    @if (isSubmitting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        <span>Sending...</span>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-paper-plane me-2"></i>
+                                        <span>Send Message</span>
+                                    }
+                                </button>
+                            </div>
+                        </EditForm>
+                    }
+                </div>
+            </div>
+
+            @if (!isSubmitted)
+            {
+                <div class="mt-4 text-center text-muted">
+                    <p>
+                        <small>
+                            <i class="fas fa-lock"></i> Your information is safe and will never be shared with third parties.
+                        </small>
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private CreateContactDto contactModel = new CreateContactDto();
+    private bool isSubmitting = false;
+    private bool isSubmitted = false;
+    private string? errorMessage;
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            isSubmitting = true;
+            errorMessage = null;
+
+            await ContactService.SubmitContactAsync(contactModel);
+
+            isSubmitted = true;
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = "Failed to send message. Please try again later.";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void ResetForm()
+    {
+        contactModel = new CreateContactDto();
+        isSubmitted = false;
+        errorMessage = null;
+    }
+}

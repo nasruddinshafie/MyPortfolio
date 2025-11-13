@@ -89,7 +89,7 @@
 
             NavigationManager.NavigateTo("/", forceLoad: true);
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             errorMessage = "Registration failed. Email or username may already be taken.";
         }

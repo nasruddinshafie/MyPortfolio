@@ -1,52 +1,43 @@
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.Authorization;
+using Portfolio.UI;
 using Portfolio.UI.Services;
+using Portfolio.UI.Handlers;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // Add Authentication services
-builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddAuthorizationCore();
 
+// Register the AuthTokenHandler
+builder.Services.AddScoped<AuthTokenHandler>();
+
 // Configure HTTP client for API calls with base URL
+// AuthService doesn't need the token handler (login/register are public endpoints)
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7278/") });
+
+// BioService and ProjectService need the auth token handler for protected endpoints
 builder.Services.AddHttpClient<IBioService, BioService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7278/");
-});
+})
+.AddHttpMessageHandler<AuthTokenHandler>();
 
 builder.Services.AddHttpClient<IProjectService, ProjectService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7278/");
-});
+})
+.AddHttpMessageHandler<AuthTokenHandler>();
 
-builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
+// ContactService - public endpoint (submit) but also has protected endpoints (admin view)
+builder.Services.AddHttpClient<IContactService, ContactService>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7278/");
 });
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
-
-app.Run();
+await builder.Build().RunAsync();

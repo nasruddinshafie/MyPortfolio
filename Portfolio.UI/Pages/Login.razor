@@ -66,6 +66,9 @@
     private string? errorMessage;
     private bool isLoading = false;
 
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
     private async Task HandleLogin()
     {
         try
@@ -81,9 +84,11 @@
                 customProvider.NotifyAuthenticationStateChanged();
             }
 
-            NavigationManager.NavigateTo("/", forceLoad: true);
+            // Redirect to the return URL or home page
+            var redirectUrl = string.IsNullOrEmpty(ReturnUrl) ? "/" : Uri.UnescapeDataString(ReturnUrl);
+            NavigationManager.NavigateTo(redirectUrl, forceLoad: true);
         }
-        catch (HttpRequestException ex)
+        catch (HttpRequestException)
         {
             errorMessage = "Invalid email or password";
         }

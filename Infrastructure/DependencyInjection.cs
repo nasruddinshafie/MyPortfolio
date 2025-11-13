@@ -3,6 +3,7 @@ using Application.Common.Interfaces;
 using Infrastructure.Features.Bio.Repositories;
 using Infrastructure.Features.Projects.Repositories;
 using Infrastructure.Features.Auth.Repositories;
+using Infrastructure.Features.Contact.Repositories;
 using Infrastructure.Features.Auth.Security;
 
 namespace Infrastructure;
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddScoped<IBioRepository, BioRepository>();
         services.AddScoped<IProjectRepository, ProjectRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IContactRepository, ContactRepository>();
 
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddScoped<ITokenGenerator, JwtTokenGenerator>();
